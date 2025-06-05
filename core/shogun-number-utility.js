@@ -1,5 +1,5 @@
-export class ShougunNumberUtility {
-  getRandomInteger(fromInclusive, toExclusive) {
+export class ShogunNumberUtility {
+  getRandomIntegerNumber(fromInclusive, toExclusive) {
     if (typeof fromInclusive !== "number" || typeof toExclusive !== "number") {
       throw new TypeError("Arguments must be numbers");
     }
