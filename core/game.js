@@ -1,6 +1,6 @@
-import { MoveDirections } from "./move-directions";
-import { ShogunNumberUtility } from "./shogun-number-utility";
-import { GameStatuses } from "./types/types";
+import { MoveDirections } from "./move-directions.js";
+import { ShogunNumberUtility } from "./shogun-number-utility.js";
+import { GameStatuses } from "./types/types.js";
 
 export class Game {
   #settings = {
@@ -11,6 +11,11 @@ export class Game {
     googleJumpInterval: 1000,
   };
   #status = GameStatuses.pending;
+  /**
+   * @type ShogunNumberUtility
+   */
+  #numberUtility;
+  #callbacksProps = null;
   #googlePosition = null;
   #playersPositions = {
     1: null,
@@ -18,11 +23,11 @@ export class Game {
   };
   #player1Position = null;
   #player2Position = null;
-  /**
-   * @type ShogunNumberUtility
-   */
-  #numberUtility;
 
+  constructor(numberUtility, callbacksProps) {
+    this.#numberUtility = numberUtility;
+    this.#callbacksProps = callbacksProps;
+  }
   #makeGoogleJump() {
     const newPosition = {
       x: this.#numberUtility.getRandomIntegerNumber(0, this.#settings.gridSize.columsCount),
@@ -56,19 +61,19 @@ export class Game {
     this.#status = GameStatuses.inProgress;
     this.#placePlayer1ToGrid();
     this.#makeGoogleJump();
+    this.#callbacksProps.onChange();
     setInterval(() => {
       this.#makeGoogleJump();
+      this.#callbacksProps.onChange();
     }, this.#settings.googleJumpInterval);
   }
 
-  constructor(numberUtility) {
-    this.#numberUtility = numberUtility;
-  }
   set googleJumpInterval(value) {
     if (!Number.isInteger(value) || value <= 0) {
       throw new Error();
     }
     this.#settings.googleJumpInterval = value;
+    this.#callbacksProps.onChange();
   }
   get status() {
     return this.#status;
@@ -113,8 +118,9 @@ export class Game {
     }
     const isGoogleInThisPosition = false;
     if (isGoogleInThisPosition) {
-      //this.#cathGoogle(playerNumber)
+      // this.#cathGoogle(playerNumber)
     }
     this.#playersPositions[playerNumber] = newPosition;
+    this.#callbacksProps.onChange();
   }
 }
