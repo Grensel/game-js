@@ -1,4 +1,4 @@
-import { GameStatuses, GridSize } from "./types/types";
+import { GameStatuses, GridSize } from "./types/types.js";
 
 export class Game {
   #status = GameStatuses.settings;
@@ -7,12 +7,22 @@ export class Game {
   #player2Position = null;
   #numberUtility; // = new ShogunNumberUtility()
   #settings = {
-    GridSize: new GridSize(4, 4),
+    gridSize: new GridSize(4, 4),
     googleJumpInterval: 1000,
   };
 
+  #observers = [];
+
   constructor(somethingSimilarToNumberUtility) {
     this.#numberUtility = somethingSimilarToNumberUtility;
+  }
+
+  subscribe(observer) {
+    this.#observers.push(observer);
+  }
+
+  #notify() {
+    this.#observers.forEach(o => o());
   }
 
   start() {
@@ -24,15 +34,18 @@ export class Game {
     this.#placePlayer1ToGrid();
     this.#makeGoogleJump();
 
+    this.#notify();
+
     setInterval(() => {
       this.#makeGoogleJump();
+      this.#notify();
     }, this.#settings.googleJumpInterval);
   }
 
   #placePlayer1ToGrid() {
     const newPosition = {
-      x: this.#numberUtility.getRandomIntegerNumber(2, this.#settings.GridSize.columnsCount),
-      y: this.#numberUtility.getRandomIntegerNumber(2, this.#settings.GridSize.rowsCount),
+      x: this.#numberUtility.getRandomIntegerNumber(1, this.#settings.gridSize.columnsCount),
+      y: this.#numberUtility.getRandomIntegerNumber(1, this.#settings.gridSize.rowsCount),
     };
     this.#player1Position = newPosition;
   }
@@ -43,8 +56,8 @@ export class Game {
 
   #makeGoogleJump() {
     const newPosition = {
-      x: this.#numberUtility.getRandomIntegerNumber(0, this.#settings.GridSize.columnsCount),
-      y: this.#numberUtility.getRandomIntegerNumber(0, this.#settings.GridSize.rowsCount),
+      x: this.#numberUtility.getRandomIntegerNumber(0, this.#settings.gridSize.columnsCount),
+      y: this.#numberUtility.getRandomIntegerNumber(0, this.#settings.gridSize.rowsCount),
     };
     if (
       (newPosition.x === this.googlePosition?.x && newPosition.y === this.googlePosition?.y) ||
@@ -104,6 +117,7 @@ export class Game {
     }
     // this["#position.player" + playerNumber] = newPosition;
     this.#player1Position = newPosition;
+    this.#notify();
   }
 
   //JSDoc
@@ -113,11 +127,12 @@ export class Game {
    */
 
   set gridSize(value) {
-    return (this.#settings.GridSize = value);
+    this.#settings.gridSize = value;
+    this.#notify();
   }
 
   get gridSize() {
-    return this.#settings.GridSize;
+    return this.#settings.gridSize;
   }
 
   /**
@@ -139,6 +154,7 @@ export class Game {
       throw new RangeError("Interval must be numbers");
     }
     this.#settings.googleJumpInterval = newValue;
+    this.#notify();
   }
 
   get status() {
