@@ -66,8 +66,23 @@ describe("game", () => {
 
   it("player should be move in correct direction", async () => {
     const fakeNumberUtil = {
-      getRandomIntegerNumber() {
-        return 2;
+      *numberGenerator() {
+        yield 2;
+        yield 2;
+        yield 1;
+        yield 2;
+        yield 0;
+        yield 0;
+        while (true) {
+          yield 0;
+        }
+      },
+      iterator: null,
+      getRandomIntegerNumber(from, to) {
+        if (!this.iterator) {
+          this.iterator = this.numberGenerator();
+        }
+        return this.iterator.next().value;
       },
     };
     const game = new Game(fakeNumberUtil);
@@ -75,6 +90,27 @@ describe("game", () => {
     game.start();
 
     expect(game.player1Position).toEqual({ x: 2, y: 2 });
+
+    game.movePlayer(1, "RIGHT");
+    expect(game.player1Position).toEqual({ x: 2, y: 2 });
+    game.movePlayer(1, "DOWN");
+    expect(game.player1Position).toEqual({ x: 2, y: 2 });
+    game.movePlayer(1, "UP");
+    expect(game.player1Position).toEqual({ x: 2, y: 1 });
+    game.movePlayer(1, "LEFT");
+    expect(game.player1Position).toEqual({ x: 1, y: 1 });
+    game.movePlayer(1, "UP");
+    expect(game.player1Position).toEqual({ x: 1, y: 0 });
+    game.movePlayer(1, "UP");
+    expect(game.player1Position).toEqual({ x: 1, y: 0 });
+    game.movePlayer(1, "LEFT");
+    expect(game.player1Position).toEqual({ x: 0, y: 0 });
+    game.movePlayer(1, "LEFT");
+    expect(game.player1Position).toEqual({ x: 0, y: 0 });
+    game.movePlayer(1, "DOWN");
+    expect(game.player1Position).toEqual({ x: 0, y: 1 });
+    game.movePlayer(1, "RIGHT");
+    expect(game.player1Position).toEqual({ x: 1, y: 1 });
   });
 });
 

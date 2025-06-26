@@ -4,6 +4,7 @@ export class Game {
   #status = GameStatuses.settings;
   #googlePosition = null;
   #player1Position = null;
+  #player2Position = null;
   #numberUtility; // = new ShogunNumberUtility()
   #settings = {
     GridSize: new GridSize(4, 4),
@@ -20,28 +21,12 @@ export class Game {
     }
     this.#status = GameStatuses.inProgress;
 
-    this.#makeGoogleJump();
     this.#placePlayer1ToGrid();
+    this.#makeGoogleJump();
 
     setInterval(() => {
       this.#makeGoogleJump();
     }, this.#settings.googleJumpInterval);
-  }
-
-  #makeGoogleJump() {
-    const newPosition = {
-      x: this.#numberUtility.getRandomIntegerNumber(0, this.#settings.GridSize.columnsCount),
-      y: this.#numberUtility.getRandomIntegerNumber(0, this.#settings.GridSize.rowsCount),
-    };
-    if (newPosition.x === this.googlePosition?.x && newPosition.y === this.googlePosition?.y) {
-      this.#makeGoogleJump();
-      return;
-    }
-    this.#googlePosition = newPosition;
-  }
-
-  get googlePosition() {
-    return this.#googlePosition;
   }
 
   #placePlayer1ToGrid() {
@@ -54,6 +39,71 @@ export class Game {
 
   get player1Position() {
     return this.#player1Position;
+  }
+
+  #makeGoogleJump() {
+    const newPosition = {
+      x: this.#numberUtility.getRandomIntegerNumber(0, this.#settings.GridSize.columnsCount),
+      y: this.#numberUtility.getRandomIntegerNumber(0, this.#settings.GridSize.rowsCount),
+    };
+    if (
+      (newPosition.x === this.googlePosition?.x && newPosition.y === this.googlePosition?.y) ||
+      (newPosition.x === this.#player1Position?.x && newPosition.y === this.player1Position?.y)
+    ) {
+      this.#makeGoogleJump();
+      return;
+    }
+    this.#googlePosition = newPosition;
+  }
+
+  get googlePosition() {
+    return this.#googlePosition;
+  }
+
+  // todo: movedirection to constants
+  movePlayer(playerNumber, moveDirection) {
+    const position = this["player" + playerNumber + "Position"];
+    let newPosition;
+    switch (moveDirection) {
+      case "UP": {
+        newPosition = {
+          x: position.x,
+          y: position.y - 1,
+        };
+        break;
+      }
+      case "DOWN": {
+        newPosition = {
+          x: position.x,
+          y: position.y + 1,
+        };
+        break;
+      }
+      case "LEFT": {
+        newPosition = {
+          x: position.x - 1,
+          y: position.y,
+        };
+        break;
+      }
+      case "RIGHT": {
+        newPosition = {
+          x: position.x + 1,
+          y: position.y,
+        };
+        break;
+      }
+    }
+    if (
+      newPosition.x >= this.gridSize.columnsCount ||
+      newPosition.x < 0 ||
+      newPosition.y >= this.gridSize.rowsCount ||
+      newPosition.y < 0
+    ) {
+      return;
+    }
+    // this["#position.player" + playerNumber] = newPosition;
+    this.#player1Position = newPosition;
   }
 
   //JSDoc
